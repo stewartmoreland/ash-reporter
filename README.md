@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/stewartmoreland/ash-reporter/graph/badge.svg?token=9UZGT1AUJY)](https://codecov.io/github/stewartmoreland/ash-reporter) [![Unit Tests & Coverage](https://github.com/stewartmoreland/ash-reporter/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/stewartmoreland/ash-reporter/actions/workflows/unit-tests.yml) [![ASH Security Scan](https://github.com/stewartmoreland/ash-reporter/actions/workflows/ash-security-scan.yml/badge.svg)](https://github.com/stewartmoreland/ash-reporter/actions/workflows/ash-security-scan.yml)
+
 # ASH Security Reporter
 
 A modern, interactive web-based report generator for AWS Automated Security Helper (ASH) findings. This project transforms ASH JSON output into beautiful, self-contained HTML reports that can be easily shared, viewed offline, and integrated into CI/CD pipelines.
