@@ -1,8 +1,8 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   --font-sans: system-ui, sans-serif;
-  --font-mono: 'SF Mono', Monaco, monospace;
+  --font-mono: "SF Mono", Monaco, monospace;
   --color-critical: #dc2626;
   --color-high: #ea580c;
   --color-medium: #d97706;

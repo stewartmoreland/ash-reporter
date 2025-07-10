@@ -15,6 +15,9 @@ dist-ssr
 .yarn/install-state.gz
 !.yarn/releases
 
+# Coverage
+coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,0 +1,181 @@
+name: ASH Security Scan
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  ash-scan:
+    name: Run ASH Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: source
+
+      - name: Checkout ASH repository
+        uses: actions/checkout@v4
+        with:
+          repository: awslabs/automated-security-helper
+          path: ash
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Add ASH to PATH
+        run: echo "${{ github.workspace }}/ash" >> $GITHUB_PATH
+
+      - name: Create ASH configuration
+        run: |
+          cd source
+          cat > .ash_config << EOF
+          [tool_config]
+          [grype]
+          enabled = true
+          [gitsecrets]
+          enabled = true
+          [javascript]
+          enabled = true
+          [bandit]
+          enabled = false
+          [checkov]
+          enabled = false
+          [clair]
+          enabled = false
+          [findsecbugs]
+          enabled = false
+          [hadolint]
+          enabled = false
+          [nancy]
+          enabled = false
+          [osv]
+          enabled = false
+          [safety]
+          enabled = false
+          [secrets]
+          enabled = false
+          [semgrep]
+          enabled = false
+          [snyk]
+          enabled = false
+          [tfsec]
+          enabled = false
+          [trivy]
+          enabled = false
+          [trufflehog]
+          enabled = false
+          [yara]
+          enabled = false
+          EOF
+
+      - name: Run ASH scan
+        run: |
+          cd source
+          ash --build-target ci --source-dir . --output-dir ash_output
+        env:
+          DOCKER_BUILDKIT: 1
+
+      - name: Upload ASH results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ash-security-report
+          path: source/ash_output/
+          retention-days: 30
+
+      - name: Generate security report
+        if: always()
+        run: |
+          cd source
+          if [ -f ash_output/aggregated_results.json ]; then
+            # Build the reporter app
+            npm install
+            npm run build
+            
+            # Generate HTML report
+            node scripts/generate-report.js ash_output/aggregated_results.json ash-security-report.html
+          fi
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ash-html-report
+          path: source/ash-security-report.html
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './source/ash_output/aggregated_results.json';
+
+            if (fs.existsSync(path)) {
+              const results = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const findings = results.results || [];
+              
+              const criticalCount = findings.filter(f => f.severity === 'critical').length;
+              const highCount = findings.filter(f => f.severity === 'high').length;
+              const mediumCount = findings.filter(f => f.severity === 'medium').length;
+              const lowCount = findings.filter(f => f.severity === 'low').length;
+              
+              let status = '✅ No critical or high severity findings';
+              if (criticalCount > 0 || highCount > 0) {
+                status = '⚠️ Security findings detected';
+              }
+              
+              const comment = `## ASH Security Scan Results
+              
+              ${status}
+              
+              ### Summary
+              - **Critical**: ${criticalCount}
+              - **High**: ${highCount}
+              - **Medium**: ${mediumCount}
+              - **Low**: ${lowCount}
+              
+              ### Scanners Used
+              - JavaScript/Node.js (ESLint security rules)
+              - Git Secrets (credential detection)
+              - Grype (vulnerability scanning)
+              
+              📄 [Download detailed HTML report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+      - name: Fail on critical/high findings
+        if: always()
+        run: |
+          cd source
+          if [ -f ash_output/aggregated_results.json ]; then
+            critical_count=$(jq '[.results[] | select(.severity == "critical")] | length' ash_output/aggregated_results.json)
+            high_count=$(jq '[.results[] | select(.severity == "high")] | length' ash_output/aggregated_results.json)
+
+            echo "Critical findings: $critical_count"
+            echo "High findings: $high_count"
+            
+            if [ "$critical_count" -gt 0 ] || [ "$high_count" -gt 0 ]; then
+              echo "❌ Critical or high severity security findings detected!"
+              exit 1
+            else
+              echo "✅ No critical or high severity findings detected"
+            fi
+          fi

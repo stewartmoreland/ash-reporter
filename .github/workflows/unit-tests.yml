@@ -1,0 +1,155 @@
+name: Unit Tests & Coverage
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test:
+    name: Run Unit Tests with Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run unit tests with coverage
+        run: yarn test:coverage
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          directory: ./coverage
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Comment PR with coverage results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './coverage/coverage-summary.json';
+
+            if (fs.existsSync(path)) {
+              const coverage = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const { total } = coverage;
+              
+              const formatPercentage = (pct) => `${pct.toFixed(1)}%`;
+              
+              let status = '✅ Coverage thresholds met';
+              const threshold = 90;
+              
+              if (total.lines.pct < threshold || total.branches.pct < threshold || 
+                  total.functions.pct < threshold || total.statements.pct < threshold) {
+                status = '⚠️ Coverage below threshold (90%)';
+              }
+              
+              const comment = `## Unit Test Coverage Report
+              
+              ${status}
+              
+              ### Coverage Summary
+              | Metric | Coverage | Threshold |
+              |--------|----------|-----------|
+              | **Lines** | ${formatPercentage(total.lines.pct)} | 90% |
+              | **Branches** | ${formatPercentage(total.branches.pct)} | 90% |
+              | **Functions** | ${formatPercentage(total.functions.pct)} | 90% |
+              | **Statements** | ${formatPercentage(total.statements.pct)} | 90% |
+              
+              ### Test Results
+              - **Total Tests**: ${total.lines.total > 0 ? 'Available in detailed report' : 'Check workflow logs'}
+              - **Coverage Report**: [View detailed HTML report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+              
+              📄 **Artifacts**: Download the full coverage report from the workflow artifacts.
+              `;
+              
+              // Get existing comments to avoid duplicates
+              const { data: comments } = await github.rest.issues.listComments({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              
+              const existingComment = comments.find(comment => 
+                comment.body.includes('## Unit Test Coverage Report') && 
+                comment.user.type === 'Bot'
+              );
+              
+              if (existingComment) {
+                await github.rest.issues.updateComment({
+                  comment_id: existingComment.id,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '❌ Coverage report not found. Check the test execution logs for details.'
+              });
+            }
+
+      - name: Fail on coverage threshold
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            node -e "
+              const coverage = require('./coverage/coverage-summary.json');
+              const { total } = coverage;
+              const threshold = 90;
+              
+              console.log('Coverage Summary:');
+              console.log(\`Lines: \${total.lines.pct}%\`);
+              console.log(\`Branches: \${total.branches.pct}%\`);
+              console.log(\`Functions: \${total.functions.pct}%\`);
+              console.log(\`Statements: \${total.statements.pct}%\`);
+              
+              if (total.lines.pct < threshold || total.branches.pct < threshold || 
+                  total.functions.pct < threshold || total.statements.pct < threshold) {
+                console.log(\`❌ Coverage below threshold (\${threshold}%)\`);
+                process.exit(1);
+              } else {
+                console.log(\`✅ All coverage thresholds met (\${threshold}%)\`);
+              }
+            "
+          else
+            echo "❌ Coverage report not found"
+            exit 1
+          fi 
