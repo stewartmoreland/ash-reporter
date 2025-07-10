@@ -1,0 +1,25 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+        threshold: 80%
+    patch:
+      default:
+        target: 90%
+        threshold: 80%
+  ignore:
+    - ".yarn/"
+    - "node_modules/"
+    - "src/test/"
+    - "**/*.d.ts"
+    - "**/*.config.*"
+    - "dist/"
+    - "scripts/"
+    - "*.config.js"
+    - "*.config.ts"
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false 
