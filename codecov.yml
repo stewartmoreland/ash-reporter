@@ -18,6 +18,7 @@ coverage:
     - "scripts/"
     - "*.config.js"
     - "*.config.ts"
+    - "test-results.junit.xml"
 
 comment:
   layout: "reach,diff,flags,tree"

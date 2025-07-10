@@ -10,7 +10,7 @@
 		"test": "vitest",
 		"test:ui": "vitest --ui",
 		"test:run": "vitest run",
-		"test:coverage": "vitest run --coverage",
+		"test:coverage": "vitest run --coverage --reporter=default --reporter=junit --outputFile=test-results.junit.xml",
 		"test:watch": "vitest --watch"
 	},
 	"dependencies": {
