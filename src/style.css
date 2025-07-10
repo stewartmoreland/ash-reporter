@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: system-ui, sans-serif;
+  --font-mono: 'SF Mono', Monaco, monospace;
+  --color-critical: #dc2626;
+  --color-high: #ea580c;
+  --color-medium: #d97706;
+  --color-low: #16a34a;
+  --color-info: #2563eb;
+  --color-critical-bg: #fef2f2;
+  --color-high-bg: #fff7ed;
+  --color-medium-bg: #fffbeb;
+  --color-low-bg: #f0fdf4;
+  --color-info-bg: #eff6ff;
+  --color-critical-border: #fecaca;
+  --color-high-border: #fed7aa;
+  --color-medium-border: #fde68a;
+  --color-low-border: #bbf7d0;
+  --color-info-border: #bfdbfe;
+  --space-card: 1rem;
+  --space-section: 2rem;
+  --border-radius: 0.5rem;
+  --border-width: 1px;
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

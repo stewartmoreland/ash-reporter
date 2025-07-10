@@ -1,0 +1,115 @@
+{
+  "findings": [
+    {
+      "tool": "Grype",
+      "severity": "CRITICAL",
+      "message": "Vulnerability CVE-2024-3094 in xz-utils",
+      "location": "package-lock.json",
+      "description": "A backdoor was discovered in xz-utils that could allow remote code execution. This affects compressed packages and SSH connections.",
+      "recommendation": "Immediately upgrade xz-utils to version 5.4.7 or later. Review all systems that may have been compromised.",
+      "cve": "CVE-2024-3094",
+      "score": 9.8
+    },
+    {
+      "tool": "git-secrets",
+      "severity": "CRITICAL",
+      "message": "AWS access key detected in source code",
+      "location": "src/config/aws.js",
+      "lineNumber": 15,
+      "pattern": "AKIA[0-9A-Z]{16}",
+      "description": "Hardcoded AWS access key found in source code. This exposes your AWS infrastructure to unauthorized access.",
+      "recommendation": "Remove the hardcoded access key immediately. Use AWS IAM roles, environment variables, or AWS Secrets Manager instead."
+    },
+    {
+      "tool": "Grype",
+      "severity": "HIGH",
+      "message": "Vulnerability CVE-2023-44487 in golang.org/x/net",
+      "location": "go.mod",
+      "description": "HTTP/2 rapid reset vulnerability that can cause denial of service.",
+      "recommendation": "Update golang.org/x/net to version 0.17.0 or later",
+      "cve": "CVE-2023-44487",
+      "score": 7.5
+    },
+    {
+      "tool": "Semgrep",
+      "severity": "HIGH",
+      "message": "SQL injection vulnerability detected",
+      "location": "src/database/queries.js",
+      "lineNumber": 42,
+      "description": "User input is directly concatenated into SQL query without proper sanitization.",
+      "recommendation": "Use parameterized queries or prepared statements. Example: db.query('SELECT * FROM users WHERE id = ?', [userId])"
+    },
+    {
+      "tool": "git-secrets",
+      "severity": "HIGH",
+      "message": "Private SSH key detected",
+      "location": "deploy/keys/id_rsa",
+      "lineNumber": 1,
+      "pattern": "-----BEGIN.*PRIVATE KEY-----",
+      "description": "Private SSH key found in repository. This could allow unauthorized access to servers.",
+      "recommendation": "Remove the private key from the repository. Use SSH agent forwarding or deploy keys instead."
+    },
+    {
+      "tool": "Semgrep",
+      "severity": "MEDIUM",
+      "message": "Hardcoded password in configuration",
+      "location": "src/config/database.js",
+      "lineNumber": 8,
+      "description": "Database password is hardcoded in the configuration file.",
+      "recommendation": "Use environment variables or a secure configuration management system to store sensitive credentials."
+    },
+    {
+      "tool": "CDK-nag",
+      "severity": "MEDIUM",
+      "message": "S3 bucket allows public read access",
+      "location": "infrastructure/storage.ts",
+      "lineNumber": 25,
+      "description": "S3 bucket is configured to allow public read access which may expose sensitive data.",
+      "recommendation": "Review if public access is necessary. If not, remove public read permissions and use signed URLs or CloudFront for public content."
+    },
+    {
+      "tool": "Grype",
+      "severity": "MEDIUM",
+      "message": "Vulnerability CVE-2023-39325 in lodash",
+      "location": "package.json",
+      "description": "Prototype pollution vulnerability in lodash library.",
+      "recommendation": "Update lodash to version 4.17.21 or later",
+      "cve": "CVE-2023-39325",
+      "score": 5.9
+    },
+    {
+      "tool": "CDK-nag",
+      "severity": "LOW",
+      "message": "Lambda function timeout is too high",
+      "location": "infrastructure/lambda.ts",
+      "lineNumber": 18,
+      "description": "Lambda function timeout is set to 15 minutes, which may lead to unnecessary costs.",
+      "recommendation": "Review if such a long timeout is necessary. Consider breaking down the function into smaller parts."
+    },
+    {
+      "tool": "Semgrep",
+      "severity": "LOW",
+      "message": "Insecure random number generation",
+      "location": "src/utils/token.js",
+      "lineNumber": 12,
+      "description": "Using Math.random() for security-sensitive operations. This is not cryptographically secure.",
+      "recommendation": "Use crypto.randomBytes() or crypto.getRandomValues() for cryptographically secure random number generation."
+    },
+    {
+      "tool": "CDK-nag",
+      "severity": "LOW",
+      "message": "CloudWatch logs retention not set",
+      "location": "infrastructure/logging.ts",
+      "lineNumber": 33,
+      "description": "CloudWatch log groups do not have retention period configured, leading to indefinite log storage.",
+      "recommendation": "Set appropriate log retention periods to manage costs and comply with data retention policies."
+    }
+  ],
+  "metadata": {
+    "scanDate": "2025-01-15T14:30:00Z",
+    "totalFindings": 11,
+    "tools": ["Grype", "git-secrets", "Semgrep", "CDK-nag"],
+    "duration": 127,
+    "version": "1.2.3"
+  }
+}

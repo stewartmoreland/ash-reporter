@@ -1,0 +1,44 @@
+{
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"generate": "npm run build && node scripts/generate-report.js"
+	},
+	"dependencies": {
+		"@radix-ui/react-accordion": "^1.2.11",
+		"@radix-ui/react-alert-dialog": "^1.1.14",
+		"@radix-ui/react-dialog": "^1.1.14",
+		"@radix-ui/react-dropdown-menu": "^2.1.15",
+		"@radix-ui/react-label": "^2.1.7",
+		"@radix-ui/react-progress": "^1.1.7",
+		"@radix-ui/react-separator": "^1.1.7",
+		"@radix-ui/react-tabs": "^1.1.12",
+		"@radix-ui/react-toast": "^1.2.14",
+		"@radix-ui/react-tooltip": "^1.2.7",
+		"@tailwindcss/vite": "^4.1.11",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-preact": "^0.525.0",
+		"preact": "^10.25.3",
+		"preact-iso": "^2.9.2",
+		"preact-render-to-string": "^6.5.13",
+		"tailwind-merge": "^3.3.1",
+		"tailwindcss": "^4.1.11"
+	},
+	"devDependencies": {
+		"@preact/preset-vite": "^2.9.3",
+		"@types/node": "^22.10.7",
+		"eslint": "^8.57.1",
+		"eslint-config-preact": "^1.5.0",
+		"terser": "^5.43.1",
+		"typescript": "^5.8.3",
+		"vite": "^6.0.4"
+	},
+	"eslintConfig": {
+		"extends": "preact"
+	},
+	"packageManager": "yarn@4.9.2"
+}
