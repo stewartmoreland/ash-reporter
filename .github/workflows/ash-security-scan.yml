@@ -64,7 +64,7 @@ jobs:
           [secrets]
           enabled = false
           [semgrep]
-          enabled = false
+          enabled = true
           [snyk]
           enabled = false
           [tfsec]
@@ -80,7 +80,7 @@ jobs:
       - name: Run ASH scan
         run: |
           cd source
-          ash --build-target ci --source-dir . --output-dir ash_output
+          ash --build-target ci --source-dir . --output-dir ash_output --format json
         env:
           DOCKER_BUILDKIT: 1
 
